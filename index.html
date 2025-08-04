@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Imóveis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      padding: 2rem;
+    }
+    .form-section {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="mb-4">Cadastro de Imóveis</h2>
+
+    <div class="form-section">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Tipo do imóvel</label>
+          <input type="text" id="tipo" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Endereço (Rua e Número)</label>
+          <input type="text" id="endereco" class="form-control">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">É esquina?</label>
+          <select id="esquina" class="form-select">
+            <option value="">Selecione</option>
+            <option>Sim</option>
+            <option>Não</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Valor pedido (R$)</label>
+          <input type="number" id="valor" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Metragem total (m²)</label>
+          <input type="number" id="metragem" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Frente (m)</label>
+          <input type="text" id="frente" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fundo (m)</label>
+          <input type="text" id="fundo" class="form-control">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Imobiliária</label>
+          <input type="text" id="imobiliaria" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Corretor / Contato</label>
+          <input type="text" id="contato" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Observações</label>
+          <input type="text" id="obs" class="form-control">
+        </div>
+
+        <div class="col-12 text-end">
+          <button onclick="adicionarImovel()" class="btn btn-primary">Salvar Imóvel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Tipo</th>
+            <th>Endereço</th>
+            <th>Esquina?</th>
+            <th>Valor (R$)</th>
+            <th>Metragem</th>
+            <th>Frente</th>
+            <th>Fundo</th>
+            <th>Imobiliária</th>
+            <th>Contato</th>
+            <th>Observações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-imoveis"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcXHBCkm-bpYZRUrmeuLvZnHGbccPVWH4",
+      authDomain: "cadastroimoveis-8228a.firebaseapp.com",
+      projectId: "cadastroimoveis-8228a",
+      storageBucket: "cadastroimoveis-8228a.firebasestorage.app",
+      messagingSenderId: "63608009223",
+      appId: "1:63608009223:web:23c3e358c2aabcb9c630a2",
+      measurementId: "G-GXG7QPGL6E"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const tabela = document.getElementById("tabela-imoveis")
+
+    function adicionarImovel() {
+      const tipo = document.getElementById("tipo").value
+      const endereco = document.getElementById("endereco").value
+      const esquina = document.getElementById("esquina").value
+      const valor = document.getElementById("valor").value
+      const metragem = document.getElementById("metragem").value
+      const frente = document.getElementById("frente").value
+      const fundo = document.getElementById("fundo").value
+      const imobiliaria = document.getElementById("imobiliaria").value
+      const contato = document.getElementById("contato").value
+      const obs = document.getElementById("obs").value
+
+      db.collection("imoveis").add({
+        tipo, endereco, esquina, valor, metragem, frente, fundo, imobiliaria, contato, obs
+      }).then(() => {
+        carregarImoveis();
+        limparCampos();
+      });
+    }
+
+    function carregarImoveis() {
+      tabela.innerHTML = "";
+      db.collection("imoveis").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const linha = document.createElement("tr")
+          linha.innerHTML = `
+            <td>${d.tipo}</td>
+            <td>${d.endereco}</td>
+            <td>${d.esquina}</td>
+            <td>${d.valor}</td>
+            <td>${d.metragem}</td>
+            <td>${d.frente}</td>
+            <td>${d.fundo}</td>
+            <td>${d.imobiliaria}</td>
+            <td>${d.contato}</td>
+            <td>${d.obs}</td>
+          `;
+          tabela.appendChild(linha);
+        });
+      });
+    }
+
+    function limparCampos() {
+      document.querySelectorAll("input, select").forEach(input => input.value = "")
+    }
+
+    window.onload = carregarImoveis;
+  </script>
+</body>
+</html>
