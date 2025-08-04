@@ -65,11 +65,17 @@
 </head>
 <body>
   <div class="container-fluid px-0">
-    <h2 class="mb-4">Cadastro de Imóveis</h2>
+    <!-- Top bar com título -->
+    <nav class="navbar navbar-light bg-light mb-3">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Cadastro de Imóveis</span>
+      </div>
+    </nav>
 
-    <!-- Botão para abrir o formulário -->
-    <div class="mb-3">
+    <!-- Botões de ação -->
+    <div class="px-3 mb-3 d-flex gap-3">
       <button id="btn-abrir-form" class="btn btn-success" onclick="abrirFormulario()">Adicionar Novo Imóvel</button>
+      <button id="btn-toggle-filtros" class="btn btn-primary" onclick="toggleFiltros()">Adicionar Filtro</button>
     </div>
 
     <!-- Formulário de cadastro -->
@@ -361,13 +367,10 @@
     </div>
 
     <!-- Área de filtros -->
-    <div class="form-section">
-      <!-- Botão para abrir o painel de filtros -->
-      <button id="btn-toggle-filtros" class="btn btn-primary mb-3" onclick="toggleFiltros()">Adicionar Filtro</button>
+    <div class="px-3 mb-3">
       <!-- Conteúdo do painel de filtros (inicialmente oculto) -->
-      <div id="filtros-container" style="display:none;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
+      <div id="filtros-container" style="display:none;" class="border p-3 rounded">
+        <div class="d-flex justify-content-end">
           <button type="button" class="btn-close" aria-label="Fechar" onclick="toggleFiltros()"></button>
         </div>
         <div class="row g-3">
@@ -425,6 +428,9 @@
               <option value="fundo-desc">Fundo (maior para menor)</option>
             </select>
           </div>
+        </div>
+        <div class="text-end mt-3">
+          <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
         </div>
       </div>
     </div>
@@ -864,6 +870,28 @@
 
     // Carregar imóveis quando a página carregar
     window.onload = carregarImoveis;
+
+    // ------------------------------
+    // Controle de zoom com o mouse
+    // ------------------------------
+    // Permite aumentar ou diminuir o zoom da grade usando Ctrl + scroll
+    let zoomLevel = 1;
+    const gridContainer = document.getElementById('grid-imoveis');
+    gridContainer.addEventListener('wheel', function (e) {
+      // só executar zoom quando o usuário estiver pressionando Ctrl ou Cmd (para não conflitar com a rolagem)
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          // scroll para cima => aumenta zoom
+          zoomLevel = Math.min(zoomLevel + 0.1, 2);
+        } else {
+          // scroll para baixo => diminui zoom
+          zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+        }
+        gridContainer.style.transform = `scale(${zoomLevel})`;
+        gridContainer.style.transformOrigin = '0 0';
+      }
+    }, { passive: false });
 
     // ------------------------------
     // Funções para gestão de notas
