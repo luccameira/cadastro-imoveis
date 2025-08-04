@@ -49,6 +49,23 @@
             <option>Apartamento</option>
           </select>
         </div>
+        <div class="col-md-4">
+          <label class="form-label">Bairro</label>
+          <select id="bairro" class="form-select">
+            <option value="">Selecione</option>
+            <option>Quaresmeira</option>
+            <option>Jd das Flores</option>
+            <option>VI Urupês</option>
+            <option>Casa Branca</option>
+            <option>Jd Imperador</option>
+            <option>Jd Márcia</option>
+            <option>VI Amorim</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Referência</label>
+          <input type="text" id="referencia" class="form-control">
+        </div>
         <div class="col-md-6">
           <label class="form-label">Endereço (Rua e Número)</label>
           <input type="text" id="endereco" class="form-control">
@@ -103,6 +120,8 @@
         <thead class="table-dark">
           <tr>
             <th>Tipo</th>
+            <th>Bairro</th>
+            <th>Referência</th>
             <th>Endereço</th>
             <th>Esquina?</th>
             <th>Valor (R$)</th>
@@ -136,6 +155,8 @@
 
     function adicionarImovel() {
       const tipo = document.getElementById("tipo").value
+      const bairro = document.getElementById("bairro").value
+      const referencia = document.getElementById("referencia").value
       const endereco = document.getElementById("endereco").value
       const esquina = document.getElementById("esquina").value
       const valor = document.getElementById("valor").value
@@ -147,7 +168,7 @@
       const obs = document.getElementById("obs").value
 
       db.collection("imoveis").add({
-        tipo, endereco, esquina, valor, metragem, frente, fundo, imobiliaria, contato, obs
+        tipo, bairro, referencia, endereco, esquina, valor, metragem, frente, fundo, imobiliaria, contato, obs
       }).then(() => {
         carregarImoveis();
         limparCampos();
@@ -163,6 +184,8 @@
           const linha = document.createElement("tr")
           linha.innerHTML = `
             <td>${d.tipo}</td>
+            <td>${d.bairro || ""}</td>
+            <td>${d.referencia || ""}</td>
             <td>${d.endereco}</td>
             <td>${d.esquina}</td>
             <td>${d.valor}</td>
