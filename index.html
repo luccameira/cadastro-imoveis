@@ -54,6 +54,7 @@
     <div id="formulario-container" class="form-section">
       <button type="button" class="btn-close" aria-label="Fechar" onclick="fecharFormulario()"></button>
       <div class="row g-3">
+        <!-- Linha 1: Tipo, Bairro, Endereço -->
         <div class="col-md-4">
           <label class="form-label">Tipo do imóvel</label>
           <select id="tipo" class="form-select">
@@ -270,13 +271,27 @@
           </select>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Referência</label>
-          <input type="text" id="referencia" class="form-control">
-        </div>
-        <div class="col-md-6">
           <label class="form-label">Endereço (Rua e Número)</label>
           <input type="text" id="endereco" class="form-control">
         </div>
+        <!-- Linha 2: Referência, Metragem, Frente, Fundo -->
+        <div class="col-md-4">
+          <label class="form-label">Referência</label>
+          <input type="text" id="referencia" class="form-control">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Metragem total (m²)</label>
+          <input type="number" id="metragem" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Frente (m)</label>
+          <input type="text" id="frente" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fundo (m)</label>
+          <input type="text" id="fundo" class="form-control">
+        </div>
+        <!-- Linha 3: Esquina, Valor, Imobiliária, Contato -->
         <div class="col-md-2">
           <label class="form-label">É esquina?</label>
           <select id="esquina" class="form-select">
@@ -290,32 +305,35 @@
           <!-- Use text input to allow custom formatting -->
           <input type="text" id="valor" class="form-control" oninput="formatarValorInput(this)" placeholder="0,00">
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Metragem total (m²)</label>
-          <input type="number" id="metragem" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Frente (m)</label>
-          <input type="text" id="frente" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Fundo (m)</label>
-          <input type="text" id="fundo" class="form-control">
-        </div>
         <div class="col-md-4">
           <label class="form-label">Imobiliária</label>
           <input type="text" id="imobiliaria" class="form-control">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label class="form-label">Corretor / Contato</label>
           <input type="text" id="contato" class="form-control">
         </div>
+        <!-- Linha 4: Documentação, Topografia, Link do anúncio -->
         <div class="col-md-4">
+          <label class="form-label">Documentação</label>
+          <input type="text" id="documentacao" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Topografia</label>
+          <input type="text" id="topografia" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Link do anúncio</label>
+          <input type="url" id="link" class="form-control">
+        </div>
+        <!-- Linha 5: Observações -->
+        <div class="col-md-12">
           <label class="form-label">Observações</label>
           <input type="text" id="obs" class="form-control">
         </div>
+        <!-- Botão de salvar -->
         <div class="col-12 text-end">
-          <button onclick="adicionarImovel()" class="btn btn-primary">Salvar Imóvel</button>
+          <button onclick="adicionarImovel()" class="btn btn-primary" id="btn-salvar">Salvar Imóvel</button>
         </div>
       </div>
     </div>
@@ -338,7 +356,14 @@
           <label class="form-label">Bairro</label>
           <select id="filtro-bairro" class="form-select">
             <option value="">Todos</option>
-            <!-- options will be dynamically populated based on available data -->
+            <!-- opções serão preenchidas dinamicamente -->
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Imobiliária</label>
+          <select id="filtro-imobiliaria" class="form-select">
+            <option value="">Todas</option>
+            <!-- opções serão preenchidas dinamicamente -->
           </select>
         </div>
         <div class="col-md-3">
@@ -393,7 +418,10 @@
             <th class="sortable" onclick="sortByColumn('fundo')">Fundo</th>
             <th>Imobiliária</th>
             <th>Contato</th>
+            <th>Documentação</th>
+            <th>Topografia</th>
             <th>Observações</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="tabela-imoveis"></tbody>
@@ -421,6 +449,8 @@
     let imoveis = [];
     // Parâmetros atuais de ordenação
     let currentSort = { key: '', direction: '' };
+    // ID do imóvel em edição (null significa inserção)
+    let editId = null;
 
     /**
      * Formata um número para moeda brasileira (R$) com máscara de milhares.
@@ -477,6 +507,8 @@
      */
     function limparCampos() {
       document.querySelectorAll("#formulario-container input, #formulario-container select").forEach(input => input.value = "");
+      editId = null;
+      document.getElementById("btn-salvar").textContent = "Salvar Imóvel";
     }
 
     /**
@@ -496,7 +528,7 @@
     }
 
     /**
-     * Adiciona um novo imóvel ao Firestore
+     * Adiciona ou atualiza um imóvel no Firestore
      */
     function adicionarImovel() {
       const tipo = document.getElementById("tipo").value;
@@ -512,8 +544,10 @@
       const imobiliaria = document.getElementById("imobiliaria").value;
       const contato = document.getElementById("contato").value;
       const obs = document.getElementById("obs").value;
-      // Adiciona ao banco
-      db.collection("imoveis").add({
+      const documentacao = document.getElementById("documentacao").value;
+      const topografia = document.getElementById("topografia").value;
+      const link = document.getElementById("link").value;
+      const data = {
         tipo,
         bairro,
         referencia,
@@ -525,12 +559,28 @@
         fundo,
         imobiliaria,
         contato,
-        obs
-      }).then(() => {
-        carregarImoveis();
-        limparCampos();
-        fecharFormulario();
-      });
+        obs,
+        documentacao,
+        topografia,
+        link
+      };
+      if (editId) {
+        // Atualizar
+        db.collection("imoveis").doc(editId).update(data).then(() => {
+          editId = null;
+          document.getElementById("btn-salvar").textContent = "Salvar Imóvel";
+          carregarImoveis();
+          limparCampos();
+          fecharFormulario();
+        });
+      } else {
+        // Adicionar
+        db.collection("imoveis").add(data).then(() => {
+          carregarImoveis();
+          limparCampos();
+          fecharFormulario();
+        });
+      }
     }
 
     /**
@@ -542,8 +592,8 @@
       db.collection("imoveis").get().then(snapshot => {
         snapshot.forEach(doc => {
           const data = doc.data();
-          // Garantir que alguns campos não sejam undefined
           imoveis.push({
+            id: doc.id,
             ...data,
             valor: data.valor || 0,
             metragem: data.metragem || 0,
@@ -555,11 +605,15 @@
             contato: data.contato || '',
             obs: data.obs || '',
             endereco: data.endereco || '',
-            esquina: data.esquina || ''
+            esquina: data.esquina || '',
+            documentacao: data.documentacao || '',
+            topografia: data.topografia || '',
+            link: data.link || ''
           });
         });
-        // Preencher filtro de bairros dinamicamente
+        // Preencher filtros dinamicamente
         popularFiltroBairro();
+        popularFiltroImobiliaria();
         applyFilters();
       });
     }
@@ -573,7 +627,7 @@
       listaImoveis.forEach(item => {
         const linha = document.createElement("tr");
         linha.innerHTML = `
-          <td>${item.tipo || ''}</td>
+          <td>${item.link ? `<a href="${item.link}" target="_blank">${item.tipo || ''}</a>` : (item.tipo || '')}</td>
           <td>${item.bairro || ''}</td>
           <td>${item.referencia || ''}</td>
           <td>${item.endereco || ''}</td>
@@ -584,7 +638,13 @@
           <td>${item.fundo || ''}</td>
           <td>${item.imobiliaria || ''}</td>
           <td>${item.contato || ''}</td>
+          <td>${item.documentacao || ''}</td>
+          <td>${item.topografia || ''}</td>
           <td>${item.obs || ''}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-1" onclick="editarImovel('${item.id}')">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="excluirImovel('${item.id}')">Excluir</button>
+          </td>
         `;
         tabela.appendChild(linha);
       });
@@ -597,6 +657,7 @@
       let filtrados = [...imoveis];
       const tipo = document.getElementById('filtro-tipo').value;
       const bairro = document.getElementById('filtro-bairro').value;
+      const imobiliariaFiltro = document.getElementById('filtro-imobiliaria').value;
       const valorMinStr = document.getElementById('filtro-valor-min').value;
       const valorMaxStr = document.getElementById('filtro-valor-max').value;
       const metragemMin = parseFloat(document.getElementById('filtro-metragem-min').value) || 0;
@@ -610,6 +671,10 @@
       // Filtrar por bairro
       if (bairro) {
         filtrados = filtrados.filter(item => item.bairro === bairro);
+      }
+      // Filtrar por imobiliária
+      if (imobiliariaFiltro) {
+        filtrados = filtrados.filter(item => item.imobiliaria === imobiliariaFiltro);
       }
       // Filtrar por valor
       filtrados = filtrados.filter(item => {
@@ -700,11 +765,72 @@
       });
     }
 
+    /**
+     * Preenche o filtro de imobiliárias com base nos imóveis carregados
+     */
+    function popularFiltroImobiliaria() {
+      const filtroImobiliaria = document.getElementById('filtro-imobiliaria');
+      filtroImobiliaria.innerHTML = '<option value="">Todas</option>';
+      const imobUnicas = new Set();
+      imoveis.forEach(item => {
+        if (item.imobiliaria) imobUnicas.add(item.imobiliaria);
+      });
+      Array.from(imobUnicas).sort().forEach(nome => {
+        const opt = document.createElement('option');
+        opt.value = nome;
+        opt.textContent = nome;
+        filtroImobiliaria.appendChild(opt);
+      });
+    }
+
+    /**
+     * Preenche o formulário para edição do imóvel
+     * @param {string} id
+     */
+    function editarImovel(id) {
+      db.collection("imoveis").doc(id).get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          editId = id;
+          document.getElementById("tipo").value = data.tipo || '';
+          document.getElementById("bairro").value = data.bairro || '';
+          document.getElementById("referencia").value = data.referencia || '';
+          document.getElementById("endereco").value = data.endereco || '';
+          document.getElementById("esquina").value = data.esquina || '';
+          document.getElementById("valor").value = data.valor ? formatarMoeda(data.valor) : '';
+          document.getElementById("metragem").value = data.metragem || '';
+          document.getElementById("frente").value = data.frente || '';
+          document.getElementById("fundo").value = data.fundo || '';
+          document.getElementById("imobiliaria").value = data.imobiliaria || '';
+          document.getElementById("contato").value = data.contato || '';
+          document.getElementById("obs").value = data.obs || '';
+          document.getElementById("documentacao").value = data.documentacao || '';
+          document.getElementById("topografia").value = data.topografia || '';
+          document.getElementById("link").value = data.link || '';
+          abrirFormulario();
+          document.getElementById("btn-salvar").textContent = "Atualizar Imóvel";
+        }
+      });
+    }
+
+    /**
+     * Exclui um imóvel do Firestore
+     * @param {string} id
+     */
+    function excluirImovel(id) {
+      if (confirm('Tem certeza que deseja excluir este imóvel?')) {
+        db.collection("imoveis").doc(id).delete().then(() => {
+          carregarImoveis();
+        });
+      }
+    }
+
     // Carregar imóveis quando a página carregar
     window.onload = carregarImoveis;
     // Reaplicar filtros sempre que filtros forem alterados (opcional - para experiência dinâmica)
     document.getElementById('filtro-tipo').addEventListener('change', applyFilters);
     document.getElementById('filtro-bairro').addEventListener('change', applyFilters);
+    document.getElementById('filtro-imobiliaria').addEventListener('change', applyFilters);
     document.getElementById('ordenar-por').addEventListener('change', applyFilters);
     document.getElementById('filtro-valor-min').addEventListener('change', applyFilters);
     document.getElementById('filtro-valor-max').addEventListener('change', applyFilters);
