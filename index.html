@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastro de Imóveis</title>
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
@@ -26,16 +28,29 @@
     .btn-close {
       float: right;
     }
+    /* Style for sortable column headers */
+    th.sortable {
+      cursor: pointer;
+    }
+    th.sortable:hover {
+      text-decoration: underline;
+    }
+    /* Filter inputs spacing */
+    .filter-group {
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2 class="mb-4">Cadastro de Imóveis</h2>
 
+    <!-- Botão para abrir o formulário -->
     <div class="mb-3">
       <button id="btn-abrir-form" class="btn btn-success" onclick="abrirFormulario()">Adicionar Novo Imóvel</button>
     </div>
 
+    <!-- Formulário de cadastro -->
     <div id="formulario-container" class="form-section">
       <button type="button" class="btn-close" aria-label="Fechar" onclick="fecharFormulario()"></button>
       <div class="row g-3">
@@ -52,6 +67,7 @@
         <div class="col-md-4">
           <label class="form-label">Bairro</label>
           <select id="bairro" class="form-select">
+            <!-- Lista grande de bairros -->
             <option value="">Selecione</option>
             <option>Baruel</option>
             <option>Caxangá</option>
@@ -269,10 +285,10 @@
             <option>Não</option>
           </select>
         </div>
-
         <div class="col-md-3">
           <label class="form-label">Valor pedido (R$)</label>
-          <input type="number" id="valor" class="form-control">
+          <!-- Use text input to allow custom formatting -->
+          <input type="text" id="valor" class="form-control" oninput="formatarValorInput(this)" placeholder="0,00">
         </div>
         <div class="col-md-3">
           <label class="form-label">Metragem total (m²)</label>
@@ -286,7 +302,6 @@
           <label class="form-label">Fundo (m)</label>
           <input type="text" id="fundo" class="form-control">
         </div>
-
         <div class="col-md-4">
           <label class="form-label">Imobiliária</label>
           <input type="text" id="imobiliaria" class="form-control">
@@ -299,26 +314,83 @@
           <label class="form-label">Observações</label>
           <input type="text" id="obs" class="form-control">
         </div>
-
         <div class="col-12 text-end">
           <button onclick="adicionarImovel()" class="btn btn-primary">Salvar Imóvel</button>
         </div>
       </div>
     </div>
 
+    <!-- Área de filtros e ordenação -->
+    <div class="form-section">
+      <h5>Filtrar e Ordenar Imóveis</h5>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Tipo</label>
+          <select id="filtro-tipo" class="form-select">
+            <option value="">Todos</option>
+            <option>Casa</option>
+            <option>Terreno</option>
+            <option>Sobrado</option>
+            <option>Apartamento</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Bairro</label>
+          <select id="filtro-bairro" class="form-select">
+            <option value="">Todos</option>
+            <!-- options will be dynamically populated based on available data -->
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Valor mínimo (R$)</label>
+          <input type="text" id="filtro-valor-min" class="form-control" oninput="formatarValorInput(this)">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Valor máximo (R$)</label>
+          <input type="text" id="filtro-valor-max" class="form-control" oninput="formatarValorInput(this)">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Metragem mínima (m²)</label>
+          <input type="number" id="filtro-metragem-min" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Metragem máxima (m²)</label>
+          <input type="number" id="filtro-metragem-max" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Ordenar por</label>
+          <select id="ordenar-por" class="form-select">
+            <option value="">Selecione</option>
+            <option value="valor-asc">Valor (menor para maior)</option>
+            <option value="valor-desc">Valor (maior para menor)</option>
+            <option value="metragem-asc">Metragem (menor para maior)</option>
+            <option value="metragem-desc">Metragem (maior para menor)</option>
+            <option value="frente-asc">Frente (menor para maior)</option>
+            <option value="frente-desc">Frente (maior para menor)</option>
+            <option value="fundo-asc">Fundo (menor para maior)</option>
+            <option value="fundo-desc">Fundo (maior para menor)</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-grid">
+          <button class="btn btn-secondary" onclick="applyFilters()">Aplicar Filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de imóveis -->
     <div class="table-wrapper">
       <table class="table table-bordered table-striped">
         <thead class="table-dark">
           <tr>
-            <th>Tipo</th>
-            <th>Bairro</th>
-            <th>Referência</th>
+            <th class="sortable" onclick="sortByColumn('tipo')">Tipo</th>
+            <th class="sortable" onclick="sortByColumn('bairro')">Bairro</th>
+            <th class="sortable" onclick="sortByColumn('referencia')">Referência</th>
             <th>Endereço</th>
-            <th>Esquina?</th>
-            <th>Valor (R$)</th>
-            <th>Metragem</th>
-            <th>Frente</th>
-            <th>Fundo</th>
+            <th class="sortable" onclick="sortByColumn('esquina')">Esquina?</th>
+            <th class="sortable" onclick="sortByColumn('valor')">Valor (R$)</th>
+            <th class="sortable" onclick="sortByColumn('metragem')">Metragem</th>
+            <th class="sortable" onclick="sortByColumn('frente')">Frente</th>
+            <th class="sortable" onclick="sortByColumn('fundo')">Fundo</th>
             <th>Imobiliária</th>
             <th>Contato</th>
             <th>Observações</th>
@@ -329,7 +401,9 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script>
+    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAcXHBCkm-bpYZRUrmeuLvZnHGbccPVWH4",
       authDomain: "cadastroimoveis-8228a.firebaseapp.com",
@@ -339,27 +413,119 @@
       appId: "1:63608009223:web:23c3e358c2aabcb9c630a2",
       measurementId: "G-GXG7QPGL6E"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const tabela = document.getElementById("tabela-imoveis")
+    const tabela = document.getElementById("tabela-imoveis");
 
+    // Lista para armazenar todos os imóveis carregados
+    let imoveis = [];
+    // Parâmetros atuais de ordenação
+    let currentSort = { key: '', direction: '' };
+
+    /**
+     * Formata um número para moeda brasileira (R$) com máscara de milhares.
+     * @param {number|string} value
+     * @returns {string}
+     */
+    function formatarMoeda(value) {
+      if (value === null || value === undefined || value === '') return '';
+      const number = Number(value.toString().replace(/\./g, '').replace(/,/, '.'));
+      if (isNaN(number)) return '';
+      return number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /**
+     * Função para formatar o valor do input enquanto o usuário digita.
+     * Permite apenas números e vírgula, e adiciona separadores de milhar.
+     * @param {HTMLInputElement} element
+     */
+    function formatarValorInput(element) {
+      let value = element.value;
+      // Remove qualquer caractere que não seja número ou vírgula
+      value = value.replace(/[^0-9,]/g, '');
+      // Substitui várias vírgulas por uma vírgula e remove vírgula no início
+      value = value.replace(/,+/g, ',').replace(/^,/, '');
+      // Se há vírgula, separa parte inteira e decimal para formatar a parte inteira
+      let [intPart, decPart] = value.split(',');
+      if (!intPart) intPart = '';
+      intPart = intPart.replace(/^0+(?=\d)/, '');
+      intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      if (decPart !== undefined) {
+        decPart = decPart.slice(0, 2);
+        element.value = `${intPart},${decPart}`;
+      } else {
+        element.value = intPart;
+      }
+    }
+
+    /**
+     * Converte uma string de moeda (com ponto e vírgula) para número
+     * Ex.: "1.234,56" => 1234.56
+     * @param {string} str
+     * @returns {number}
+     */
+    function moedaParaNumero(str) {
+      if (!str) return 0;
+      // Remove pontos de milhar e substitui vírgula por ponto
+      const normalized = str.toString().replace(/\./g, '').replace(/,/, '.');
+      const num = parseFloat(normalized);
+      return isNaN(num) ? 0 : num;
+    }
+
+    /**
+     * Limpa todos os campos do formulário de cadastro
+     */
+    function limparCampos() {
+      document.querySelectorAll("#formulario-container input, #formulario-container select").forEach(input => input.value = "");
+    }
+
+    /**
+     * Abre o formulário de cadastro
+     */
+    function abrirFormulario() {
+      document.getElementById("formulario-container").style.display = "block";
+      document.getElementById("btn-abrir-form").style.display = "none";
+    }
+
+    /**
+     * Fecha o formulário de cadastro
+     */
+    function fecharFormulario() {
+      document.getElementById("formulario-container").style.display = "none";
+      document.getElementById("btn-abrir-form").style.display = "inline-block";
+    }
+
+    /**
+     * Adiciona um novo imóvel ao Firestore
+     */
     function adicionarImovel() {
-      const tipo = document.getElementById("tipo").value
-      const bairro = document.getElementById("bairro").value
-      const referencia = document.getElementById("referencia").value
-      const endereco = document.getElementById("endereco").value
-      const esquina = document.getElementById("esquina").value
-      const valor = document.getElementById("valor").value
-      const metragem = document.getElementById("metragem").value
-      const frente = document.getElementById("frente").value
-      const fundo = document.getElementById("fundo").value
-      const imobiliaria = document.getElementById("imobiliaria").value
-      const contato = document.getElementById("contato").value
-      const obs = document.getElementById("obs").value
-
+      const tipo = document.getElementById("tipo").value;
+      const bairro = document.getElementById("bairro").value;
+      const referencia = document.getElementById("referencia").value;
+      const endereco = document.getElementById("endereco").value;
+      const esquina = document.getElementById("esquina").value;
+      const valorStr = document.getElementById("valor").value;
+      const valor = moedaParaNumero(valorStr);
+      const metragem = document.getElementById("metragem").value;
+      const frente = document.getElementById("frente").value;
+      const fundo = document.getElementById("fundo").value;
+      const imobiliaria = document.getElementById("imobiliaria").value;
+      const contato = document.getElementById("contato").value;
+      const obs = document.getElementById("obs").value;
+      // Adiciona ao banco
       db.collection("imoveis").add({
-        tipo, bairro, referencia, endereco, esquina, valor, metragem, frente, fundo, imobiliaria, contato, obs
+        tipo,
+        bairro,
+        referencia,
+        endereco,
+        esquina,
+        valor,
+        metragem,
+        frente,
+        fundo,
+        imobiliaria,
+        contato,
+        obs
       }).then(() => {
         carregarImoveis();
         limparCampos();
@@ -367,48 +533,183 @@
       });
     }
 
+    /**
+     * Carrega todos os imóveis do Firestore e popula a lista local
+     */
     function carregarImoveis() {
       tabela.innerHTML = "";
+      imoveis = [];
       db.collection("imoveis").get().then(snapshot => {
         snapshot.forEach(doc => {
-          const d = doc.data();
-          const linha = document.createElement("tr")
-          linha.innerHTML = `
-            <td>${d.tipo}</td>
-            <td>${d.bairro || ""}</td>
-            <td>${d.referencia || ""}</td>
-            <td>${d.endereco}</td>
-            <td>${d.esquina}</td>
-            <td>${d.valor}</td>
-            <td>${d.metragem}</td>
-            <td>${d.frente}</td>
-            <td>${d.fundo}</td>
-            <td>${d.imobiliaria}</td>
-            <td>${d.contato}</td>
-            <td>${d.obs}</td>
-          `;
-          tabela.appendChild(linha);
+          const data = doc.data();
+          // Garantir que alguns campos não sejam undefined
+          imoveis.push({
+            ...data,
+            valor: data.valor || 0,
+            metragem: data.metragem || 0,
+            frente: data.frente || '',
+            fundo: data.fundo || '',
+            bairro: data.bairro || '',
+            referencia: data.referencia || '',
+            imobiliaria: data.imobiliaria || '',
+            contato: data.contato || '',
+            obs: data.obs || '',
+            endereco: data.endereco || '',
+            esquina: data.esquina || ''
+          });
         });
+        // Preencher filtro de bairros dinamicamente
+        popularFiltroBairro();
+        applyFilters();
       });
     }
 
-    function limparCampos() {
-      document.querySelectorAll("input, select").forEach(input => input.value = "")
+    /**
+     * Renderiza a tabela de imóveis na página usando a lista fornecida
+     * @param {Array} listaImoveis
+     */
+    function renderizarTabela(listaImoveis) {
+      tabela.innerHTML = "";
+      listaImoveis.forEach(item => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${item.tipo || ''}</td>
+          <td>${item.bairro || ''}</td>
+          <td>${item.referencia || ''}</td>
+          <td>${item.endereco || ''}</td>
+          <td>${item.esquina || ''}</td>
+          <td>${formatarMoeda(item.valor)}</td>
+          <td>${item.metragem || ''}</td>
+          <td>${item.frente || ''}</td>
+          <td>${item.fundo || ''}</td>
+          <td>${item.imobiliaria || ''}</td>
+          <td>${item.contato || ''}</td>
+          <td>${item.obs || ''}</td>
+        `;
+        tabela.appendChild(linha);
+      });
     }
 
-    function abrirFormulario() {
-      document.getElementById("formulario-container").style.display = "block";
-      document.getElementById("btn-abrir-form").style.display = "none";
+    /**
+     * Filtra a lista de imóveis de acordo com os filtros selecionados
+     */
+    function applyFilters() {
+      let filtrados = [...imoveis];
+      const tipo = document.getElementById('filtro-tipo').value;
+      const bairro = document.getElementById('filtro-bairro').value;
+      const valorMinStr = document.getElementById('filtro-valor-min').value;
+      const valorMaxStr = document.getElementById('filtro-valor-max').value;
+      const metragemMin = parseFloat(document.getElementById('filtro-metragem-min').value) || 0;
+      const metragemMax = parseFloat(document.getElementById('filtro-metragem-max').value) || Infinity;
+      const valorMin = moedaParaNumero(valorMinStr) || 0;
+      const valorMax = moedaParaNumero(valorMaxStr) || Infinity;
+      // Filtrar por tipo
+      if (tipo) {
+        filtrados = filtrados.filter(item => item.tipo === tipo);
+      }
+      // Filtrar por bairro
+      if (bairro) {
+        filtrados = filtrados.filter(item => item.bairro === bairro);
+      }
+      // Filtrar por valor
+      filtrados = filtrados.filter(item => {
+        const val = parseFloat(item.valor) || 0;
+        return val >= valorMin && val <= valorMax;
+      });
+      // Filtrar por metragem
+      filtrados = filtrados.filter(item => {
+        const m = parseFloat(item.metragem) || 0;
+        return m >= metragemMin && m <= metragemMax;
+      });
+      // Ordenar se selecionado
+      const ordem = document.getElementById('ordenar-por').value;
+      if (ordem) {
+        filtrados.sort((a, b) => {
+          const [chave, dir] = ordem.split('-');
+          let valA = a[chave];
+          let valB = b[chave];
+          // Garantir comparação numérica para campos de valor ou metragem
+          if (chave === 'valor' || chave === 'metragem') {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+          }
+          if (dir === 'asc') {
+            if (valA < valB) return -1;
+            if (valA > valB) return 1;
+            return 0;
+          } else {
+            if (valA > valB) return -1;
+            if (valA < valB) return 1;
+            return 0;
+          }
+        });
+      }
+      // Também aplicar ordenação por cabeçalho caso esteja definido
+      if (currentSort.key) {
+        filtrados.sort((a, b) => {
+          let valA = a[currentSort.key];
+          let valB = b[currentSort.key];
+          // Conversão para número em campos numéricos
+          if (['valor', 'metragem', 'frente', 'fundo'].includes(currentSort.key)) {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+          } else {
+            valA = (valA || '').toString().toLowerCase();
+            valB = (valB || '').toString().toLowerCase();
+          }
+          if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+          if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      renderizarTabela(filtrados);
     }
 
-    function fecharFormulario() {
-      document.getElementById("formulario-container").style.display = "none";
-      document.getElementById("btn-abrir-form").style.display = "inline-block";
+    /**
+     * Atualiza a ordenação ao clicar nos cabeçalhos da tabela
+     * @param {string} coluna
+     */
+    function sortByColumn(coluna) {
+      // Alterna a direção de ordenação
+      if (currentSort.key === coluna) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.key = coluna;
+        currentSort.direction = 'asc';
+      }
+      applyFilters();
     }
 
-    document.getElementById("btn-abrir-form").addEventListener("click", abrirFormulario);
+    /**
+     * Preenche o filtro de bairros com base nos imóveis carregados
+     */
+    function popularFiltroBairro() {
+      const filtroBairro = document.getElementById('filtro-bairro');
+      // Limpar opções existentes (manter apenas a primeira opção "Todos")
+      filtroBairro.innerHTML = '<option value="">Todos</option>';
+      const bairrosUnicos = new Set();
+      imoveis.forEach(item => {
+        if (item.bairro) bairrosUnicos.add(item.bairro);
+      });
+      // Ordenar alfabeticamente
+      Array.from(bairrosUnicos).sort().forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = b;
+        filtroBairro.appendChild(opt);
+      });
+    }
 
+    // Carregar imóveis quando a página carregar
     window.onload = carregarImoveis;
+    // Reaplicar filtros sempre que filtros forem alterados (opcional - para experiência dinâmica)
+    document.getElementById('filtro-tipo').addEventListener('change', applyFilters);
+    document.getElementById('filtro-bairro').addEventListener('change', applyFilters);
+    document.getElementById('ordenar-por').addEventListener('change', applyFilters);
+    document.getElementById('filtro-valor-min').addEventListener('change', applyFilters);
+    document.getElementById('filtro-valor-max').addEventListener('change', applyFilters);
+    document.getElementById('filtro-metragem-min').addEventListener('input', applyFilters);
+    document.getElementById('filtro-metragem-max').addEventListener('input', applyFilters);
   </script>
 </body>
 </html>
