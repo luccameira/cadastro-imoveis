@@ -6,12 +6,19 @@
   <title>Cadastro de Imóveis</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Firebase SDKs -->
+    <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- Bootstrap JS for modal functionality (bundle includes Popper.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Tabulator library for interactive grid -->
+  <link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
   <style>
     body {
-      padding: 2rem;
+      /* remove horizontal padding to allow full-width table while keeping vertical spacing */
+      padding: 2rem 0;
     }
     .form-section {
       background: #f9f9f9;
@@ -39,10 +46,25 @@
     .filter-group {
       margin-bottom: 1rem;
     }
+
+    /* Compact Tabulator cell styling for spreadsheet-like grid */
+    /* Reduce header and cell padding to give a tighter, Excel-like feel */
+    .tabulator .tabulator-header .tabulator-col {
+      padding: 4px 8px;
+      line-height: 1.2;
+    }
+    .tabulator .tabulator-row .tabulator-cell {
+      padding: 4px 8px;
+      line-height: 1.2;
+    }
+    /* Slightly smaller font size inside grid for compact look */
+    .tabulator .tabulator-table .tabulator-cell {
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container-fluid px-0">
     <h2 class="mb-4">Cadastro de Imóveis</h2>
 
     <!-- Botão para abrir o formulário -->
@@ -274,10 +296,10 @@
           <label class="form-label">Endereço (Rua e Número)</label>
           <input type="text" id="endereco" class="form-control">
         </div>
-        <!-- Linha 2: Referência, Metragem, Frente, Fundo -->
+        <!-- Linha 2: Referência do anúncio, Metragem, Frente, Fundo -->
         <div class="col-md-4">
-          <label class="form-label">Referência</label>
-          <input type="text" id="referencia" class="form-control">
+          <label class="form-label">Referência do anúncio</label>
+          <input type="text" id="referencia" class="form-control" placeholder="Código ou ID do portal/imobiliária">
         </div>
         <div class="col-md-2">
           <label class="form-label">Metragem total (m²)</label>
@@ -338,95 +360,77 @@
       </div>
     </div>
 
-    <!-- Área de filtros e ordenação -->
+    <!-- Área de filtros -->
     <div class="form-section">
-      <h5>Filtrar e Ordenar Imóveis</h5>
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label class="form-label">Tipo</label>
-          <select id="filtro-tipo" class="form-select">
-            <option value="">Todos</option>
-            <option>Casa</option>
-            <option>Terreno</option>
-            <option>Sobrado</option>
-            <option>Apartamento</option>
-          </select>
+      <!-- Botão para abrir o painel de filtros -->
+      <button id="btn-toggle-filtros" class="btn btn-primary mb-3" onclick="toggleFiltros()">Adicionar Filtro</button>
+      <!-- Conteúdo do painel de filtros (inicialmente oculto) -->
+      <div id="filtros-container" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
+          <button type="button" class="btn-close" aria-label="Fechar" onclick="toggleFiltros()"></button>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Bairro</label>
-          <select id="filtro-bairro" class="form-select">
-            <option value="">Todos</option>
-            <!-- opções serão preenchidas dinamicamente -->
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Imobiliária</label>
-          <select id="filtro-imobiliaria" class="form-select">
-            <option value="">Todas</option>
-            <!-- opções serão preenchidas dinamicamente -->
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Valor mínimo (R$)</label>
-          <input type="text" id="filtro-valor-min" class="form-control" oninput="formatarValorInput(this)">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Valor máximo (R$)</label>
-          <input type="text" id="filtro-valor-max" class="form-control" oninput="formatarValorInput(this)">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Metragem mínima (m²)</label>
-          <input type="number" id="filtro-metragem-min" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Metragem máxima (m²)</label>
-          <input type="number" id="filtro-metragem-max" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Ordenar por</label>
-          <select id="ordenar-por" class="form-select">
-            <option value="">Selecione</option>
-            <option value="valor-asc">Valor (menor para maior)</option>
-            <option value="valor-desc">Valor (maior para menor)</option>
-            <option value="metragem-asc">Metragem (menor para maior)</option>
-            <option value="metragem-desc">Metragem (maior para menor)</option>
-            <option value="frente-asc">Frente (menor para maior)</option>
-            <option value="frente-desc">Frente (maior para menor)</option>
-            <option value="fundo-asc">Fundo (menor para maior)</option>
-            <option value="fundo-desc">Fundo (maior para menor)</option>
-          </select>
-        </div>
-        <div class="col-md-3 d-grid">
-          <button class="btn btn-secondary" onclick="applyFilters()">Aplicar Filtros</button>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Tipo</label>
+            <select id="filtro-tipo" class="form-select">
+              <option value="">Todos</option>
+              <option>Casa</option>
+              <option>Terreno</option>
+              <option>Sobrado</option>
+              <option>Apartamento</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Bairro</label>
+            <select id="filtro-bairro" class="form-select">
+              <option value="">Todos</option>
+              <!-- opções serão preenchidas dinamicamente -->
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Imobiliária</label>
+            <select id="filtro-imobiliaria" class="form-select">
+              <option value="">Todas</option>
+              <!-- opções serão preenchidas dinamicamente -->
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Valor mínimo (R$)</label>
+            <input type="text" id="filtro-valor-min" class="form-control" oninput="formatarValorInput(this)">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Valor máximo (R$)</label>
+            <input type="text" id="filtro-valor-max" class="form-control" oninput="formatarValorInput(this)">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Metragem mínima (m²)</label>
+            <input type="number" id="filtro-metragem-min" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Metragem máxima (m²)</label>
+            <input type="number" id="filtro-metragem-max" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Ordenar por</label>
+            <select id="ordenar-por" class="form-select">
+              <option value="">Selecione</option>
+              <option value="valor-asc">Valor (menor para maior)</option>
+              <option value="valor-desc">Valor (maior para menor)</option>
+              <option value="metragem-asc">Metragem (menor para maior)</option>
+              <option value="metragem-desc">Metragem (maior para menor)</option>
+              <option value="frente-asc">Frente (menor para maior)</option>
+              <option value="frente-desc">Frente (maior para menor)</option>
+              <option value="fundo-asc">Fundo (menor para maior)</option>
+              <option value="fundo-desc">Fundo (maior para menor)</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Tabela de imóveis -->
-    <div class="table-wrapper">
-      <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-          <tr>
-            <th class="sortable" onclick="sortByColumn('tipo')">Tipo</th>
-            <th class="sortable" onclick="sortByColumn('bairro')">Bairro</th>
-            <th class="sortable" onclick="sortByColumn('referencia')">Referência</th>
-            <th>Endereço</th>
-            <th class="sortable" onclick="sortByColumn('esquina')">Esquina?</th>
-            <th class="sortable" onclick="sortByColumn('valor')">Valor (R$)</th>
-            <th class="sortable" onclick="sortByColumn('metragem')">Metragem</th>
-            <th class="sortable" onclick="sortByColumn('frente')">Frente</th>
-            <th class="sortable" onclick="sortByColumn('fundo')">Fundo</th>
-            <th>Imobiliária</th>
-            <th>Contato</th>
-            <th>Documentação</th>
-            <th>Topografia</th>
-            <th>Observações</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-imoveis"></tbody>
-      </table>
-    </div>
+    <!-- Grade de imóveis (Tabulator grid) -->
+    <div id="grid-imoveis"></div>
   </div>
 
   <!-- Scripts -->
@@ -443,14 +447,11 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const tabela = document.getElementById("tabela-imoveis");
+    // Tabulator grid instance (inicializado após carregar dados)
+    let grid;
 
     // Lista para armazenar todos os imóveis carregados
     let imoveis = [];
-    // Parâmetros atuais de ordenação
-    let currentSort = { key: '', direction: '' };
-    // ID do imóvel em edição (null significa inserção)
-    let editId = null;
 
     /**
      * Formata um número para moeda brasileira (R$) com máscara de milhares.
@@ -507,8 +508,6 @@
      */
     function limparCampos() {
       document.querySelectorAll("#formulario-container input, #formulario-container select").forEach(input => input.value = "");
-      editId = null;
-      document.getElementById("btn-salvar").textContent = "Salvar Imóvel";
     }
 
     /**
@@ -525,6 +524,16 @@
     function fecharFormulario() {
       document.getElementById("formulario-container").style.display = "none";
       document.getElementById("btn-abrir-form").style.display = "inline-block";
+    }
+
+    /**
+     * Exibe ou oculta o painel de filtros.
+     */
+    function toggleFiltros() {
+      const container = document.getElementById("filtros-container");
+      if (!container) return;
+      const isHidden = container.style.display === "none" || container.style.display === "";
+      container.style.display = isHidden ? "block" : "none";
     }
 
     /**
@@ -562,32 +571,24 @@
         obs,
         documentacao,
         topografia,
-        link
+        link,
+        // Armazena a data e hora atual como string ISO para registro
+        data_cadastro: new Date().toISOString(),
+        // Inicializa o array de notas vazio
+        notas: []
       };
-      if (editId) {
-        // Atualizar
-        db.collection("imoveis").doc(editId).update(data).then(() => {
-          editId = null;
-          document.getElementById("btn-salvar").textContent = "Salvar Imóvel";
-          carregarImoveis();
-          limparCampos();
-          fecharFormulario();
-        });
-      } else {
-        // Adicionar
-        db.collection("imoveis").add(data).then(() => {
-          carregarImoveis();
-          limparCampos();
-          fecharFormulario();
-        });
-      }
+      // Sempre cria um novo imóvel no banco de dados
+      db.collection("imoveis").add(data).then(() => {
+        carregarImoveis();
+        limparCampos();
+        fecharFormulario();
+      });
     }
 
     /**
      * Carrega todos os imóveis do Firestore e popula a lista local
      */
     function carregarImoveis() {
-      tabela.innerHTML = "";
       imoveis = [];
       db.collection("imoveis").get().then(snapshot => {
         snapshot.forEach(doc => {
@@ -608,7 +609,9 @@
             esquina: data.esquina || '',
             documentacao: data.documentacao || '',
             topografia: data.topografia || '',
-            link: data.link || ''
+            link: data.link || '',
+            notas: data.notas || [],
+            data_cadastro: data.data_cadastro || ''
           });
         });
         // Preencher filtros dinamicamente
@@ -619,36 +622,130 @@
     }
 
     /**
-     * Renderiza a tabela de imóveis na página usando a lista fornecida
+     * Renderiza a grade de imóveis na página usando Tabulator.
+     * Esta função inicializa a grade na primeira chamada e, nas subsequentes,
+     * apenas substitui os dados exibidos.
      * @param {Array} listaImoveis
      */
-    function renderizarTabela(listaImoveis) {
-      tabela.innerHTML = "";
-      listaImoveis.forEach(item => {
-        const linha = document.createElement("tr");
-        linha.innerHTML = `
-          <td>${item.link ? `<a href="${item.link}" target="_blank">${item.tipo || ''}</a>` : (item.tipo || '')}</td>
-          <td>${item.bairro || ''}</td>
-          <td>${item.referencia || ''}</td>
-          <td>${item.endereco || ''}</td>
-          <td>${item.esquina || ''}</td>
-          <td>${formatarMoeda(item.valor)}</td>
-          <td>${item.metragem || ''}</td>
-          <td>${item.frente || ''}</td>
-          <td>${item.fundo || ''}</td>
-          <td>${item.imobiliaria || ''}</td>
-          <td>${item.contato || ''}</td>
-          <td>${item.documentacao || ''}</td>
-          <td>${item.topografia || ''}</td>
-          <td>${item.obs || ''}</td>
-          <td>
-            <button class="btn btn-sm btn-primary me-1" onclick="editarImovel('${item.id}')">Editar</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirImovel('${item.id}')">Excluir</button>
-          </td>
-        `;
-        tabela.appendChild(linha);
-      });
+    function renderGrid(listaImoveis) {
+      // Definição das colunas com formatação e ações
+      const columns = [
+        {
+          title: "Data de Cadastro",
+          field: "data_cadastro",
+          sorter: "string",
+          headerSort: true,
+          formatter: function (cell) {
+            const valor = cell.getValue();
+            return valor ? formatarDataHora(valor) : '';
+          },
+          // Read-only column
+          editable: false
+        },
+        {
+          title: "Tipo",
+          field: "tipo",
+          formatter: function (cell) {
+            const data = cell.getRow().getData();
+            const tipo = cell.getValue() || '';
+            if (data.link) {
+              return `<a href="${data.link}" target="_blank">${tipo}</a>`;
+            }
+            return tipo;
+          },
+          editor: "select",
+          editorParams: { values: ["Casa", "Terreno", "Sobrado", "Apartamento"] }
+        },
+        { title: "Bairro", field: "bairro", editor: "input" },
+        { title: "Referência do anúncio", field: "referencia", editor: "input" },
+        { title: "Endereço", field: "endereco", editor: "input" },
+        { title: "Esquina?", field: "esquina", editor: "select", editorParams: { values: ["", "Sim", "Não"] } },
+        {
+          title: "Valor (R$)",
+          field: "valor",
+          formatter: function (cell) {
+            return formatarMoeda(cell.getValue());
+          },
+          editor: "input"
+        },
+        { title: "Metragem total (m²)", field: "metragem", editor: "input" },
+        { title: "Frente", field: "frente", editor: "input" },
+        { title: "Fundo", field: "fundo", editor: "input" },
+        { title: "Imobiliária", field: "imobiliaria", editor: "input" },
+        { title: "Contato", field: "contato", editor: "input" },
+        { title: "Documentação", field: "documentacao", editor: "input" },
+        { title: "Tipo de topografia", field: "topografia", editor: "input" },
+        {
+          title: "Notas",
+          field: "notas",
+          width: 90,
+          hozAlign: "center",
+          formatter: function (cell) {
+            const notas = cell.getValue() || [];
+            if (notas && notas.length > 0) {
+              return `<button class='btn btn-outline-secondary btn-sm' title='Ver notas'>📝 ${notas.length}</button>`;
+            }
+            return `<button class='btn btn-outline-secondary btn-sm' title='Adicionar nota'>+</button>`;
+          },
+          cellClick: function (e, cell) {
+            const id = cell.getRow().getData().id;
+            abrirNotasModal(id);
+          }
+        },
+        { title: "Observações", field: "obs" },
+        {
+          title: "Excluir",
+          field: "id",
+          width: 80,
+          hozAlign: "center",
+          formatter: function () {
+            return "<button class='btn btn-sm btn-danger'>Excluir</button>";
+          },
+          cellClick: function (e, cell) {
+            const id = cell.getRow().getData().id;
+            excluirImovel(id);
+          },
+        },
+      ];
+      // Inicializa ou atualiza a grade
+      if (!grid) {
+        grid = new Tabulator("#grid-imoveis", {
+          data: listaImoveis,
+          // Use fitDataTable to allow natural column widths and enable horizontal scroll when necessary
+          layout: "fitDataTable",
+          responsiveLayout: "scroll",
+          columns: columns,
+          movableColumns: true,
+          resizableColumns: true,
+          autoResize: true,
+          height: "500px",
+          cellEdited: function (cell) {
+            // Atualiza Firestore e a lista local após edição
+            const rowData = cell.getRow().getData();
+            const id = rowData.id;
+            const field = cell.getField();
+            let value = cell.getValue();
+            // Converter valores de moeda para número
+            if (field === 'valor') {
+              value = moedaParaNumero(value.toString());
+            }
+            // Atualiza Firestore
+            const updateObj = {};
+            updateObj[field] = value;
+            db.collection("imoveis").doc(id).update(updateObj).then(() => {
+              // Atualiza lista local
+              const imovel = imoveis.find(item => item.id === id);
+              if (imovel) {
+                imovel[field] = value;
+              }
+            });
+          }
+        });
+      } else {
+        grid.replaceData(listaImoveis);
+      }
     }
+
 
     /**
      * Filtra a lista de imóveis de acordo com os filtros selecionados
@@ -709,41 +806,10 @@
           }
         });
       }
-      // Também aplicar ordenação por cabeçalho caso esteja definido
-      if (currentSort.key) {
-        filtrados.sort((a, b) => {
-          let valA = a[currentSort.key];
-          let valB = b[currentSort.key];
-          // Conversão para número em campos numéricos
-          if (['valor', 'metragem', 'frente', 'fundo'].includes(currentSort.key)) {
-            valA = parseFloat(valA) || 0;
-            valB = parseFloat(valB) || 0;
-          } else {
-            valA = (valA || '').toString().toLowerCase();
-            valB = (valB || '').toString().toLowerCase();
-          }
-          if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
-          if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
-          return 0;
-        });
-      }
-      renderizarTabela(filtrados);
+      // Atualizar grade de imóveis com os dados filtrados
+      renderGrid(filtrados);
     }
 
-    /**
-     * Atualiza a ordenação ao clicar nos cabeçalhos da tabela
-     * @param {string} coluna
-     */
-    function sortByColumn(coluna) {
-      // Alterna a direção de ordenação
-      if (currentSort.key === coluna) {
-        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-      } else {
-        currentSort.key = coluna;
-        currentSort.direction = 'asc';
-      }
-      applyFilters();
-    }
 
     /**
      * Preenche o filtro de bairros com base nos imóveis carregados
@@ -783,35 +849,6 @@
       });
     }
 
-    /**
-     * Preenche o formulário para edição do imóvel
-     * @param {string} id
-     */
-    function editarImovel(id) {
-      db.collection("imoveis").doc(id).get().then(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          editId = id;
-          document.getElementById("tipo").value = data.tipo || '';
-          document.getElementById("bairro").value = data.bairro || '';
-          document.getElementById("referencia").value = data.referencia || '';
-          document.getElementById("endereco").value = data.endereco || '';
-          document.getElementById("esquina").value = data.esquina || '';
-          document.getElementById("valor").value = data.valor ? formatarMoeda(data.valor) : '';
-          document.getElementById("metragem").value = data.metragem || '';
-          document.getElementById("frente").value = data.frente || '';
-          document.getElementById("fundo").value = data.fundo || '';
-          document.getElementById("imobiliaria").value = data.imobiliaria || '';
-          document.getElementById("contato").value = data.contato || '';
-          document.getElementById("obs").value = data.obs || '';
-          document.getElementById("documentacao").value = data.documentacao || '';
-          document.getElementById("topografia").value = data.topografia || '';
-          document.getElementById("link").value = data.link || '';
-          abrirFormulario();
-          document.getElementById("btn-salvar").textContent = "Atualizar Imóvel";
-        }
-      });
-    }
 
     /**
      * Exclui um imóvel do Firestore
@@ -827,15 +864,122 @@
 
     // Carregar imóveis quando a página carregar
     window.onload = carregarImoveis;
-    // Reaplicar filtros sempre que filtros forem alterados (opcional - para experiência dinâmica)
-    document.getElementById('filtro-tipo').addEventListener('change', applyFilters);
-    document.getElementById('filtro-bairro').addEventListener('change', applyFilters);
-    document.getElementById('filtro-imobiliaria').addEventListener('change', applyFilters);
-    document.getElementById('ordenar-por').addEventListener('change', applyFilters);
-    document.getElementById('filtro-valor-min').addEventListener('change', applyFilters);
-    document.getElementById('filtro-valor-max').addEventListener('change', applyFilters);
-    document.getElementById('filtro-metragem-min').addEventListener('input', applyFilters);
-    document.getElementById('filtro-metragem-max').addEventListener('input', applyFilters);
+
+    // ------------------------------
+    // Funções para gestão de notas
+    // ------------------------------
+
+    // Variável global para armazenar o ID do imóvel atualmente selecionado nas notas
+    let selectedImovelId = null;
+
+    /**
+     * Formata uma data (ou timestamp) para o formato brasileiro dd/mm/aaaa hh:mm
+     * Aceita string ISO, objeto Date ou Timestamp do Firestore
+     * @param {any} value
+     * @returns {string}
+     */
+    function formatarDataHora(value) {
+      let date;
+      if (!value) return '';
+      // Firestore Timestamp possui método toDate
+      if (typeof value === 'object' && typeof value.toDate === 'function') {
+        date = value.toDate();
+      } else if (value instanceof Date) {
+        date = value;
+      } else {
+        date = new Date(value);
+      }
+      if (isNaN(date.getTime())) return '';
+      const dia = ('0' + date.getDate()).slice(-2);
+      const mes = ('0' + (date.getMonth() + 1)).slice(-2);
+      const ano = date.getFullYear();
+      const hora = ('0' + date.getHours()).slice(-2);
+      const minuto = ('0' + date.getMinutes()).slice(-2);
+      return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
+    }
+
+    /**
+     * Abre o modal de notas para um imóvel específico.
+     * Carrega as notas existentes e prepara o campo para adicionar nova nota.
+     * @param {string} id
+     */
+    function abrirNotasModal(id) {
+      selectedImovelId = id;
+      // Encontrar o imóvel na lista local
+      const imovel = imoveis.find(item => item.id === id);
+      const notas = (imovel && imovel.notas) ? imovel.notas : [];
+      const listaNotasDiv = document.getElementById('listaNotas');
+      listaNotasDiv.innerHTML = '';
+      // Exibir cada nota com data e texto
+      notas.forEach(nota => {
+        const dataFormatada = formatarDataHora(nota.data);
+        const texto = nota.texto || '';
+        const div = document.createElement('div');
+        div.className = 'border rounded p-2 mb-2';
+        div.innerHTML = `<small class="text-muted">${dataFormatada}</small><br>${texto}`;
+        listaNotasDiv.appendChild(div);
+      });
+      // Limpar campo de nova nota
+      document.getElementById('novaNota').value = '';
+      // Mostrar modal usando Bootstrap
+      const modalElement = document.getElementById('modalNotas');
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+
+    // Evento de clique para salvar uma nova nota
+    document.getElementById('btnSalvarNota').addEventListener('click', function () {
+      const notaTexto = document.getElementById('novaNota').value.trim();
+      if (!notaTexto || !selectedImovelId) return;
+      // Criar objeto de nota com timestamp e texto
+      const novaNota = {
+        data: new Date().toISOString(),
+        texto: notaTexto
+      };
+      // Atualizar Firestore adicionando ao array de notas
+      db.collection("imoveis").doc(selectedImovelId).update({
+        notas: firebase.firestore.FieldValue.arrayUnion(novaNota)
+      }).then(() => {
+        // Atualizar lista local para refletir imediatamente
+        const imovel = imoveis.find(item => item.id === selectedImovelId);
+        if (imovel) {
+          if (!imovel.notas) imovel.notas = [];
+          imovel.notas.push(novaNota);
+        }
+        // Reaplicar filtros para atualizar a grade com o novo número de notas
+        applyFilters();
+        // Fechar modal
+        const modalElement = document.getElementById('modalNotas');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) modalInstance.hide();
+      });
+    });
   </script>
+
+  <!-- Modal para notas -->
+  <div class="modal fade" id="modalNotas" tabindex="-1" aria-labelledby="modalNotasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNotasLabel">Notas do Imóvel</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="listaNotas" class="mb-3">
+            <!-- Lista de notas será renderizada dinamicamente -->
+          </div>
+          <div class="mb-3">
+            <label for="novaNota" class="form-label">Adicionar nova nota</label>
+            <textarea id="novaNota" class="form-control" rows="3" placeholder="Digite sua nota aqui..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary" id="btnSalvarNota">Salvar Nota</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
