@@ -20,13 +20,24 @@
     .table-wrapper {
       overflow-x: auto;
     }
+    #formulario-container {
+      display: none;
+    }
+    .btn-close {
+      float: right;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2 class="mb-4">Cadastro de Imóveis</h2>
 
-    <div class="form-section">
+    <div class="mb-3">
+      <button id="btn-abrir-form" class="btn btn-success">Adicionar Novo Imóvel</button>
+    </div>
+
+    <div id="formulario-container" class="form-section">
+      <button type="button" class="btn-close" aria-label="Fechar" onclick="fecharFormulario()"></button>
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Tipo do imóvel</label>
@@ -115,7 +126,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
     const tabela = document.getElementById("tabela-imoveis")
 
     function adicionarImovel() {
@@ -135,6 +145,7 @@
       }).then(() => {
         carregarImoveis();
         limparCampos();
+        fecharFormulario();
       });
     }
 
@@ -164,6 +175,18 @@
     function limparCampos() {
       document.querySelectorAll("input, select").forEach(input => input.value = "")
     }
+
+    function abrirFormulario() {
+      document.getElementById("formulario-container").style.display = "block";
+      document.getElementById("btn-abrir-form").style.display = "none";
+    }
+
+    function fecharFormulario() {
+      document.getElementById("formulario-container").style.display = "none";
+      document.getElementById("btn-abrir-form").style.display = "inline-block";
+    }
+
+    document.getElementById("btn-abrir-form").addEventListener("click", abrirFormulario);
 
     window.onload = carregarImoveis;
   </script>
