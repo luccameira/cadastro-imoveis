@@ -33,7 +33,7 @@
     <h2 class="mb-4">Cadastro de Imóveis</h2>
 
     <div class="mb-3">
-      <button id="btn-abrir-form" class="btn btn-success">Adicionar Novo Imóvel</button>
+      <button id="btn-abrir-form" class="btn btn-success" onclick="abrirFormulario()">Adicionar Novo Imóvel</button>
     </div>
 
     <div id="formulario-container" class="form-section">
@@ -53,13 +53,204 @@
           <label class="form-label">Bairro</label>
           <select id="bairro" class="form-select">
             <option value="">Selecione</option>
-            <option>Quaresmeira</option>
-            <option>Jd das Flores</option>
-            <option>VI Urupês</option>
-            <option>Casa Branca</option>
-            <option>Jd Imperador</option>
-            <option>Jd Márcia</option>
-            <option>VI Amorim</option>
+            <option>Baruel</option>
+            <option>Caxangá</option>
+            <option>Centro</option>
+            <option>Chácara Boa Vista Palmeiras</option>
+            <option>Chácara Estância Paulista</option>
+            <option>Chácara Faggion</option>
+            <option>Chácara Miguel Badra (Gleba 02)</option>
+            <option>Chácara Nossa Senhora Aparecida I</option>
+            <option>Chácara Nossa Senhora Aparecida II</option>
+            <option>Chácara Ouro Branco</option>
+            <option>Chácara Primavera</option>
+            <option>Chácara Recreio Internacional</option>
+            <option>Chácara Sete Cruzes</option>
+            <option>Chácaras Bonanza</option>
+            <option>Chácaras Casemiro</option>
+            <option>Chácaras Ceres</option>
+            <option>Chácaras Duchen</option>
+            <option>Chácaras Monte Carlo</option>
+            <option>Chácaras Nova Suzano</option>
+            <option>Chácaras Reunidas Guaio</option>
+            <option>Chácaras São Judas Tadeu</option>
+            <option>Chácaras Virginia</option>
+            <option>Cidade Boa Vista</option>
+            <option>Cidade Cruzeiro do Sul</option>
+            <option>Cidade Edson</option>
+            <option>Cidade Miguel Badra</option>
+            <option>Cidade Miguel Badra (Gleba 02)</option>
+            <option>Clube dos Oficiais</option>
+            <option>Conjunto Residencial Irai</option>
+            <option>Estância Americana</option>
+            <option>Estância Angelina</option>
+            <option>Estância dos Pinheirais</option>
+            <option>Estância Piratininga</option>
+            <option>Estância São Luís</option>
+            <option>Estância Tijuco Preto</option>
+            <option>Fazenda Aya</option>
+            <option>Ipelândia</option>
+            <option>Jardim Aeródromo Internacional</option>
+            <option>Jardim Alterópolis</option>
+            <option>Jardim Alto da Boa Vista</option>
+            <option>Jardim Altos de Suzano</option>
+            <option>Jardim Amazonas</option>
+            <option>Jardim Ana Rosa</option>
+            <option>Jardim Ana Rosa (Palmeiras)</option>
+            <option>Jardim Anzai</option>
+            <option>Jardim Bela Vista</option>
+            <option>Jardim Belém</option>
+            <option>Jardim Brasil</option>
+            <option>Jardim Cacique</option>
+            <option>Jardim Campestre</option>
+            <option>Jardim Carla</option>
+            <option>Jardim Carlos Cooper</option>
+            <option>Jardim Carmem</option>
+            <option>Jardim Casa Branca</option>
+            <option>Jardim Chácara Méa</option>
+            <option>Jardim das Flores</option>
+            <option>Jardim das Lavras</option>
+            <option>Jardim das Lavras II</option>
+            <option>Jardim das Lavras Mirim</option>
+            <option>Jardim do Bosque</option>
+            <option>Jardim do Lago</option>
+            <option>Jardim Dona Benta</option>
+            <option>Jardim Dora</option>
+            <option>Jardim dos Eucaliptos</option>
+            <option>Jardim dos Ipês</option>
+            <option>Jardim Esperança</option>
+            <option>Jardim Etan</option>
+            <option>Jardim Europa</option>
+            <option>Jardim Fernandes</option>
+            <option>Jardim Gardênia Azul</option>
+            <option>Jardim Graziela</option>
+            <option>Jardim Guatambu</option>
+            <option>Jardim Ikeda</option>
+            <option>Jardim Imperador</option>
+            <option>Jardim Itamaracá</option>
+            <option>Jardim Janina</option>
+            <option>Jardim Japão</option>
+            <option>Jardim Josué</option>
+            <option>Jardim Lazzareschi</option>
+            <option>Jardim Leblon</option>
+            <option>Jardim Leymar</option>
+            <option>Jardim Lígia</option>
+            <option>Jardim Lincoln</option>
+            <option>Jardim Luella</option>
+            <option>Jardim Maite</option>
+            <option>Jardim Marcato</option>
+            <option>Jardim Márcia</option>
+            <option>Jardim Margareth</option>
+            <option>Jardim Maria Emília</option>
+            <option>Jardim Matsubashi</option>
+            <option>Jardim Mimosa</option>
+            <option>Jardim Míriam</option>
+            <option>Jardim Modelo</option>
+            <option>Jardim Monte Cristo</option>
+            <option>Jardim Natal</option>
+            <option>Jardim Nazareth</option>
+            <option>Jardim Nena</option>
+            <option>Jardim Nova América</option>
+            <option>Jardim Nova Ipelândia</option>
+            <option>Jardim Novo Horizonte</option>
+            <option>Jardim Paulista</option>
+            <option>Jardim Planalto</option>
+            <option>Jardim Pompéia</option>
+            <option>Jardim Quaresmeira</option>
+            <option>Jardim Quaresmeira II</option>
+            <option>Jardim Realce</option>
+            <option>Jardim Residencial Suzano</option>
+            <option>Jardim Restinga</option>
+            <option>Jardim Revista</option>
+            <option>Jardim Santa Helena</option>
+            <option>Jardim Santa Inês</option>
+            <option>Jardim Santa Lúcia</option>
+            <option>Jardim Santa Maria</option>
+            <option>Jardim Santa Rita de Cássia</option>
+            <option>Jardim Santo Antônio</option>
+            <option>Jardim Santos</option>
+            <option>Jardim São Bernardino</option>
+            <option>Jardim São José</option>
+            <option>Jardim São Luís</option>
+            <option>Jardim São Marcos</option>
+            <option>Jardim São Paulo</option>
+            <option>Jardim Saúde</option>
+            <option>Jardim Silvestre</option>
+            <option>Jardim Suzano</option>
+            <option>Jardim Suzanópolis</option>
+            <option>Jardim Três Américas</option>
+            <option>Jardim Varan</option>
+            <option>Jardim Vitória</option>
+            <option>Meu Cantinho</option>
+            <option>Meu Sossego</option>
+            <option>Palmeiras de São Paulo</option>
+            <option>Parque Alvorada</option>
+            <option>Parque Astúrias</option>
+            <option>Parque Buenos Aires</option>
+            <option>Parque Cerejeiras</option>
+            <option>Parque do Colégio</option>
+            <option>Parque do Heroísmo</option>
+            <option>Parque Maria Helena</option>
+            <option>Parque Palmeiras</option>
+            <option>Parque Residencial Casa Branca</option>
+            <option>Parque Residencial Samambaia</option>
+            <option>Parque Santa Rosa</option>
+            <option>Parque Suzano</option>
+            <option>Parque Umuarama</option>
+            <option>Quinta Divisão</option>
+            <option>Recanto Feliz</option>
+            <option>Recanto Maria de Jesus</option>
+            <option>Recanto Ouro Fino</option>
+            <option>Recanto São José</option>
+            <option>Recreio Bela Vista</option>
+            <option>Recreio das Palmas</option>
+            <option>Recreio Rio Bonito</option>
+            <option>Recreio Santa Rita</option>
+            <option>Recreio Sertãozinho</option>
+            <option>Rincão das Lendas</option>
+            <option>Rio Abaixo</option>
+            <option>Sesc</option>
+            <option>Sítio São José</option>
+            <option>Taba Marajoara</option>
+            <option>Vale das Serras</option>
+            <option>Veraneio Juruá</option>
+            <option>Veraneio Suzano</option>
+            <option>Vila Adelina</option>
+            <option>Vila Adelino</option>
+            <option>Vila Amorim</option>
+            <option>Vila Aparecida</option>
+            <option>Vila Barros</option>
+            <option>Vila Bela Vista</option>
+            <option>Vila Cabrera</option>
+            <option>Vila Célia</option>
+            <option>Vila Colorado</option>
+            <option>Vila Costa</option>
+            <option>Vila Fátima</option>
+            <option>Vila Figueira</option>
+            <option>Vila Helena</option>
+            <option>Vila Laura</option>
+            <option>Vila Maluf</option>
+            <option>Vila Maneira</option>
+            <option>Vila Maria de Maggi</option>
+            <option>Vila Mazza</option>
+            <option>Vila Mifune</option>
+            <option>Vila Monte Sion</option>
+            <option>Vila Nova Amorim</option>
+            <option>Vila Nova das Lavras</option>
+            <option>Vila Nova Urupês</option>
+            <option>Vila Paiva</option>
+            <option>Vila Real</option>
+            <option>Vila Real Santista</option>
+            <option>Vila Rica</option>
+            <option>Vila Santana</option>
+            <option>Vila São Francisco</option>
+            <option>Vila São Jorge</option>
+            <option>Vila São Pedro</option>
+            <option>Vila Sol Nascente</option>
+            <option>Vila Theodoro</option>
+            <option>Vila Urupês</option>
+            <option>Vila Varpa</option>
+            <option>Vila Voeges</option>
           </select>
         </div>
         <div class="col-md-4">
